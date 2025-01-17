@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: postgre
+spec:
+  selector:
+    matchLabels:
+      app: postgre
+  template:
+    metadata:
+      labels:
+        app: postgre
+    spec:
+      containers:
+        - name: postgre
+          image: postgres:13.1
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: Passw0rd2023!
+            - name: POSTGRES_USER
+              value: reviewvideo
+            - name: POSTGRES_DB
+              value: reviewvideo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgre
+spec:
+  selector:
+    app: postgre
+  ports:
+    - port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviewvideos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviewvideos
+  template:
+    metadata:
+      labels:
+        app: reviewvideos
+      annotations:
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: reviewvideos
+        image: fabricioveronez/review-videos:v1
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          value: "Host=postgre;Database=reviewvideo;Username=reviewvideo;Password=Passw0rd2023!"
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviewvideos
+spec:
+  selector:
+    app: reviewvideos
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
