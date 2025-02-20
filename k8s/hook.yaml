@@ -19,3 +19,47 @@ spec:
             -d '{"message": "PreSync Application!"}' \
             https://webhook.site/5da408a6-eb29-4c2b-b36f-c6b19eec8e70
       restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sync 
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      containers:
+      - name: chamada
+        image: curlimages/curl:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            curl -X POST -H "Content-Type: application/json" \
+            -d '{"message": "Sync Application!"}' \
+            https://webhook.site/5da408a6-eb29-4c2b-b36f-c6b19eec8e70
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: post-sync 
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      containers:
+      - name: chamada
+        image: curlimages/curl:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            curl -X POST -H "Content-Type: application/json" \
+            -d '{"message": "PostSync Application!"}' \
+            https://webhook.site/5da408a6-eb29-4c2b-b36f-c6b19eec8e70
+      restartPolicy: Never
